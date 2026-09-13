@@ -2,9 +2,10 @@ pipeline {
     agent  {
         label 'agent1'
     }
-    /*environment { 
-        COURSE = 'jenkins'
-    }*/
+    environment { 
+        appVersion = ""
+        appName = ""    
+    }
     options {
         timeout(time: 30, unit: 'MINUTES') 
         disableConcurrentBuilds() //it will used for not trigger and run pipelines the same pipeline at same time.
@@ -12,18 +13,26 @@ pipeline {
     
     // Build
     stages {
-        stage('Build') {
+        stage('Read Package JSON') {
             steps {
-                script{
-                    sh """
-                        echo "Hello Build"
-                        sleep 10
-                        env
-                        echo "Hello ${params.PERSON}"
-                    """
+                script {
+                    // 1. Read the package.json file from the workspace
+                    def packageJson = readJSON file: 'package.json'
+                    
+                    // 2. Extract values into variables
+                    def appName = packageJson.name
+                    def appVersion = packageJson.version
+                    
+                    // 3. Print the values to the build logs
+                    echo "Application Name: ${appName}"
+                    echo "Application Version: ${appVersion}"
+                    
+                    
                 }
             }
+
         }
+        
         stage('Test') {
             steps {
                 script{
